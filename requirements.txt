@@ -1,0 +1,12 @@
+# String Replacer Application Requirements
+# Updated to include pydantic for data validation as per .windsurf/rules.md
+
+# External dependencies
+pydantic>=1.10.0
+
+# Python >= 3.6 required for:
+# - tkinter (GUI framework)
+# - os (file operations)
+# - random (string generation)
+# - string (character sets)
+# - typing (type hints)
