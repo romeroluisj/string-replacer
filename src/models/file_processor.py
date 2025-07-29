@@ -6,6 +6,7 @@ import os
 import random
 import string
 import re
+from datetime import datetime
 from typing import Optional, Dict, Any, Tuple
 from pydantic import BaseModel, validator
 
@@ -130,10 +131,10 @@ class FileProcessor:
         return ''.join(random.choices(char_set, k=length))
     
     def get_default_output_name(self) -> str:
-        """Generate a default output file name based on source file.
+        """Generate a default output file name based on source file with today's date.
         
         Returns:
-            str: Default output filename with '_updated' suffix, or empty string
+            str: Default output filename with '_yyyy_mm_dd' suffix, or empty string
                 if no source file is set.
         """
         if not self.config.source_file_path:
@@ -141,7 +142,11 @@ class FileProcessor:
         
         base_name = os.path.basename(self.config.source_file_path)
         name, ext = os.path.splitext(base_name)
-        return f"{name}_updated{ext}"
+        
+        # Get today's date in yyyy_mm_dd format
+        today = datetime.now().strftime("%Y_%m_%d")
+        
+        return f"{name}_{today}{ext}"
     
     def process_file(self) -> str:
         """Process the file with find/replace operations.

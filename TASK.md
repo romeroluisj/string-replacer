@@ -287,6 +287,32 @@ python tests/run_tests.py
   - `src/controllers/main_controller.py`: Updated to handle character set selection logic
   - `TASK.md`: Added this completion log
 
+#### 2025-07-28: Date-Based Output File Naming
+- **Status**: COMPLETED
+- **Description**: Changed output file naming from `_updated` suffix to `_yyyy_mm_dd` format using today's date
+- **Enhancement Details**:
+  - Modified `get_default_output_name()` method to use current date
+  - Format: `sample_00.txt` → `sample_00_2025_07_28.txt`
+  - Uses `datetime.now().strftime("%Y_%m_%d")` for consistent formatting
+  - Works with all file extensions (.txt, .sql, .json, etc.)
+  - Handles files without extensions correctly
+  - Maintains original filename structure with date suffix
+- **Technical Implementation**:
+  - Added `datetime` import to FileProcessor model
+  - Updated docstring to reflect new behavior
+  - Comprehensive unit tests with 8 test cases covering:
+    - Current date inclusion
+    - Different file extensions
+    - Specific example verification
+    - Mocked date testing
+    - Complex filenames
+    - Edge cases (no extension, no source file)
+    - Date format consistency
+- **Files Modified**:
+  - `src/models/file_processor.py`: Updated `get_default_output_name()` method
+  - `tests/test_date_based_naming.py`: Created comprehensive unit tests
+  - `TASK.md`: Added this completion log
+
 ## Conclusion
 
 This task specification documents the complete requirements and implementation details for the String Replacer application. The project successfully demonstrates modern software engineering practices while delivering a functional, user-friendly file processing tool.
