@@ -5,7 +5,8 @@ Handles all business logic for string replacement and file operations.
 import os
 import random
 import string
-from typing import Optional, Dict, Any
+import re
+from typing import Optional, Dict, Any, Tuple
 from pydantic import BaseModel, validator
 
 
@@ -178,6 +179,107 @@ class FileProcessor:
         try:
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(content)
+        except Exception as e:
+            raise IOError(f"Error writing output file: {str(e)}")
+        
+        return output_path
+    
+    def extract_db_passwords_from_first_line(self, content: str) -> Tuple[Optional[str], Optional[str]]:
+        """Extract database passwords from the first line of content.
+        
+        Looks for patterns like:
+        - 'BY "password"' -> new password
+        - 'REPLACE "password"' -> current password
+        
+        Args:
+            content (str): File content to parse.
+            
+        Returns:
+            Tuple[Optional[str], Optional[str]]: (new_password, current_password)
+                Returns (None, None) if patterns not found.
+        """
+        if not content.strip():
+            return None, None
+            
+        first_line = content.split('\n')[0]
+        
+        # Extract password after "BY" (new password)
+        by_pattern = r'BY\s+"([^"]+)"'
+        by_match = re.search(by_pattern, first_line, re.IGNORECASE)
+        new_password = by_match.group(1) if by_match else None
+        
+        # Extract password after "REPLACE" (current password)
+        replace_pattern = r'REPLACE\s+"([^"]+)"'
+        replace_match = re.search(replace_pattern, first_line, re.IGNORECASE)
+        current_password = replace_match.group(1) if replace_match else None
+        
+        return new_password, current_password
+    
+    def process_db_password_file(
+        self,
+        use_uppercase: bool = True,
+        use_lowercase: bool = True,
+        use_numbers: bool = True
+    ) -> str:
+        """Process file with database password replacement logic.
+        
+        Extracts passwords from first line, generates new passwords,
+        and performs replacements throughout the file.
+        
+        Args:
+            use_uppercase (bool): Include uppercase in generated password.
+            use_lowercase (bool): Include lowercase in generated password.
+            use_numbers (bool): Include numbers in generated password.
+            
+        Returns:
+            str: Path to the created output file.
+            
+        Raises:
+            ValueError: If source file, output file name not specified,
+                       or no passwords found in first line.
+            IOError: If file reading or writing fails.
+        """
+        if not self.config.source_file_path:
+            raise ValueError("No source file specified")
+        
+        if not self.config.output_file_name:
+            raise ValueError("No output file name specified")
+        
+        # Read source file
+        try:
+            with open(self.config.source_file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+        except Exception as e:
+            raise IOError(f"Error reading source file: {str(e)}")
+        
+        # Extract passwords from first line
+        str_sel_file_new_pw, str_sel_file_cur_pw = self.extract_db_passwords_from_first_line(content)
+        
+        if not str_sel_file_new_pw or not str_sel_file_cur_pw:
+            raise ValueError("Could not find password patterns in first line. Expected 'BY \"password\"' and 'REPLACE \"password\"' patterns.")
+        
+        # Generate new passwords
+        str_updated_file_new_pw = self.generate_random_string(
+            length=self.config.max_random_length,
+            use_uppercase=use_uppercase,
+            use_lowercase=use_lowercase,
+            use_numbers=use_numbers
+        )
+        str_updated_file_cur_pw = str_sel_file_new_pw
+        
+        # Perform replacements
+        # Reason: Replace all instances of old passwords with new ones
+        updated_content = content.replace(str_sel_file_new_pw, str_updated_file_new_pw)
+        updated_content = updated_content.replace(str_sel_file_cur_pw, str_updated_file_cur_pw)
+        
+        # Write to output file
+        output_path = os.path.join(
+            os.path.dirname(self.config.source_file_path), 
+            self.config.output_file_name
+        )
+        try:
+            with open(output_path, 'w', encoding='utf-8') as f:
+                f.write(updated_content)
         except Exception as e:
             raise IOError(f"Error writing output file: {str(e)}")
         

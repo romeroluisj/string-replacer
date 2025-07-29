@@ -54,6 +54,9 @@ class MainView:
         # Random string section
         self._create_random_string_section()
         
+        # File type section
+        self._create_file_type_section()
+        
         # Output file section
         self._create_output_file_section()
         
@@ -121,16 +124,30 @@ class MainView:
                                         variable=self.use_numbers_var)
         self.numbers_cb.pack(side=tk.LEFT, padx=5)
         
+    def _create_file_type_section(self) -> None:
+        """Create file type selection UI components."""
+        ttk.Label(self.main_frame, text="File Type:").grid(row=5, column=0, sticky=tk.W, pady=2)
+        
+        # Create frame for file type options
+        filetype_frame = ttk.Frame(self.main_frame)
+        filetype_frame.grid(row=5, column=1, columnspan=2, padx=5, sticky=tk.W)
+        
+        # Database password checkbox (unchecked by default)
+        self.db_pwd_var = tk.BooleanVar(value=False)
+        self.db_pwd_cb = ttk.Checkbutton(filetype_frame, text="db pwd", 
+                                       variable=self.db_pwd_var)
+        self.db_pwd_cb.pack(side=tk.LEFT, padx=5)
+        
     def _create_output_file_section(self) -> None:
         """Create output file UI components."""
-        ttk.Label(self.main_frame, text="Output File Name:").grid(row=5, column=0, sticky=tk.W, pady=2)
+        ttk.Label(self.main_frame, text="Output File Name:").grid(row=6, column=0, sticky=tk.W, pady=2)
         self.output_file_entry = ttk.Entry(self.main_frame)
-        self.output_file_entry.grid(row=5, column=1, padx=5, sticky=(tk.W, tk.E))
+        self.output_file_entry.grid(row=6, column=1, padx=5, sticky=(tk.W, tk.E))
         
     def _create_action_buttons(self) -> None:
         """Create action buttons."""
         button_frame = ttk.Frame(self.main_frame)
-        button_frame.grid(row=6, column=0, columnspan=3, pady=20)
+        button_frame.grid(row=7, column=0, columnspan=3, pady=20)
         
         self.process_button = ttk.Button(button_frame, text="Process File", 
                                        command=self._on_process_file)
@@ -145,7 +162,7 @@ class MainView:
         self.status_var = tk.StringVar(value="Ready")
         self.status_label = ttk.Label(self.main_frame, textvariable=self.status_var, 
                                     foreground="blue")
-        self.status_label.grid(row=7, column=0, columnspan=3, pady=10)
+        self.status_label.grid(row=8, column=0, columnspan=3, pady=10)
         
     def _on_browse_file(self) -> None:
         """Handle browse file button click."""
@@ -240,6 +257,14 @@ class MainView:
             bool: True if numbers checkbox is checked.
         """
         return self.use_numbers_var.get()
+    
+    def get_db_pwd_mode(self) -> bool:
+        """Get the database password mode checkbox state.
+        
+        Returns:
+            bool: True if db pwd checkbox is checked.
+        """
+        return self.db_pwd_var.get()
         
     def get_output_file_name(self) -> str:
         """Get the output file name from the entry widget.
@@ -309,9 +334,10 @@ class MainView:
         self.random_length_var.set("10")
         self.output_file_entry.delete(0, tk.END)
         
-        # Reset checkboxes to default state (all checked)
+        # Reset checkboxes to default state (all checked for character sets, unchecked for db pwd)
         self.use_uppercase_var.set(True)
         self.use_lowercase_var.set(True)
         self.use_numbers_var.set(True)
+        self.db_pwd_var.set(False)
         
         self.set_status("Ready")

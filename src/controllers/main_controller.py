@@ -90,37 +90,64 @@ class MainController:
         """Handle file processing request."""
         try:
             # Get data from view
-            file_path = self.view.get_file_path()
             find_text = self.view.get_find_text()
             replace_text = self.view.get_replace_text()
-            output_name = self.view.get_output_file_name()
+            output_file_name = self.view.get_output_file_name()
+            db_pwd_mode = self.view.get_db_pwd_mode()
             
-            # Validate inputs
-            if not file_path:
-                self.view.show_error("Missing Input", "Please select a source file")
-                return
-                
-            if not output_name:
-                self.view.show_error("Missing Input", "Please specify an output file name")
-                return
-                
-            if not find_text and not replace_text:
-                self.view.show_error("Missing Input", "Please specify text to find or replace")
+            # Validate required fields
+            if not output_file_name:
+                self.view.show_error("Validation Error", "Please specify an output file name")
+                self.view.set_status("Error: No output file name", "red")
                 return
             
-            # Update model with current data
-            self.model.set_source_file(file_path)
+            # Set model data
             self.model.set_find_replace_text(find_text, replace_text)
-            self.model.set_output_file_name(output_name)
+            self.model.set_output_file_name(output_file_name)
             
-            # Process the file
-            self.view.set_status("Processing file...", "orange")
-            output_path = self.model.process_file()
-            
-            # Show success
-            success_msg = f"File processed successfully!\nOutput saved as: {output_name}"
-            self.view.show_success("Success", success_msg)
-            self.view.set_status(f"File processed: {output_name}", "green")
+            # Check if database password mode is enabled
+            if db_pwd_mode:
+                # Process with database password logic
+                use_uppercase = self.view.get_use_uppercase()
+                use_lowercase = self.view.get_use_lowercase()
+                use_numbers = self.view.get_use_numbers()
+                
+                # Validate that at least one character type is selected
+                if not (use_uppercase or use_lowercase or use_numbers):
+                    self.view.show_error("Selection Error", "Please select at least one character type (UC, lc, or number) for password generation")
+                    self.view.set_status("Error: No character types selected", "red")
+                    return
+                
+                output_path = self.model.process_db_password_file(
+                    use_uppercase=use_uppercase,
+                    use_lowercase=use_lowercase,
+                    use_numbers=use_numbers
+                )
+                
+                # Show success message for database password processing
+                char_types = []
+                if use_uppercase:
+                    char_types.append("UC")
+                if use_lowercase:
+                    char_types.append("lc")
+                if use_numbers:
+                    char_types.append("numbers")
+                
+                char_types_str = ", ".join(char_types)
+                self.view.show_success("Database Password Processing Complete", 
+                                     f"Database passwords updated successfully!\n"
+                                     f"New passwords generated with: {char_types_str}\n"
+                                     f"Output saved to: {output_path}")
+                self.view.set_status(f"DB passwords processed: {output_path}", "green")
+            else:
+                # Process with regular find/replace logic
+                file_path = self.view.get_file_path()
+                self.model.set_source_file(file_path)
+                output_path = self.model.process_file()
+                
+                # Show success message for regular processing
+                self.view.show_success("Success", f"File processed successfully!\nOutput saved to: {output_path}")
+                self.view.set_status(f"File processed: {output_path}", "green")
             
         except FileNotFoundError as e:
             self.view.show_error("File Not Found", str(e))
