@@ -335,6 +335,139 @@ class TestDbPasswordController(unittest.TestCase):
         
         # Verify error handling (would check if show_error was called)
 
+    def test_process_db_password_with_pre_generated_password(self) -> None:
+        """Test that pre-generated password is used when provided in DB password processing."""
+        # Create test file with database password patterns
+        test_content = 'ALTER USER admin IDENTIFIED BY "newpass123" REPLACE "oldpass456";\nSELECT * FROM users;'
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.sql', delete=False) as temp_file:
+            temp_file.write(test_content)
+            temp_file_path = temp_file.name
+        
+        try:
+            # Set up processor with source file and output name
+            self.processor.set_source_file(temp_file_path)
+            self.processor.set_output_file_name('output_test.sql')
+            
+            # Define the pre-generated password that should be used
+            pre_generated_password = "12345"
+            
+            # Process with pre-generated password
+            output_path = self.processor.process_db_password_file(
+                use_uppercase=True,
+                use_lowercase=True, 
+                use_numbers=True,
+                pre_generated_password=pre_generated_password
+            )
+            
+            # Read the output file to verify the pre-generated password was used
+            with open(output_path, 'r', encoding='utf-8') as f:
+                output_content = f.read()
+            
+            # Verify that the pre-generated password "12345" is in the output
+            self.assertIn("12345", output_content)
+            # Verify that the old password "newpass123" was replaced
+            self.assertNotIn("newpass123", output_content)
+            # Verify that the current password "oldpass456" was replaced with "newpass123"
+            self.assertNotIn("oldpass456", output_content)
+            
+            # Clean up output file
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+                
+        finally:
+            # Clean up temp file
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+    
+    def test_process_db_password_without_pre_generated_password(self) -> None:
+        """Test that new password is generated when no pre-generated password provided."""
+        # Create test file with database password patterns
+        test_content = 'ALTER USER admin IDENTIFIED BY "newpass123" REPLACE "oldpass456";\nSELECT * FROM users;'
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.sql', delete=False) as temp_file:
+            temp_file.write(test_content)
+            temp_file_path = temp_file.name
+        
+        try:
+            # Set up processor with source file and output name
+            self.processor.set_source_file(temp_file_path)
+            self.processor.set_output_file_name('output_test.sql')
+            self.processor.set_max_random_length(8)
+            
+            # Process without pre-generated password (should generate new one)
+            output_path = self.processor.process_db_password_file(
+                use_uppercase=True,
+                use_lowercase=True,
+                use_numbers=True,
+                pre_generated_password=None
+            )
+            
+            # Read the output file
+            with open(output_path, 'r', encoding='utf-8') as f:
+                output_content = f.read()
+            
+            # Verify that the old password "newpass123" was replaced with something else
+            self.assertNotIn("newpass123", output_content)
+            # Verify that the current password "oldpass456" was replaced
+            self.assertNotIn("oldpass456", output_content)
+            # The new password should be 8 characters (we can't predict what it is)
+            
+            # Clean up output file
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+                
+        finally:
+            # Clean up temp file
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+
+    def test_case_2_existing_replace_text_used_as_db_password(self) -> None:
+        """Test Case 2: Existing value in replace text field is used as DB password without generating new random string."""
+        # Create test file with database password patterns
+        test_content = 'ALTER USER admin IDENTIFIED BY "newpass123" REPLACE "oldpass456";\nSELECT * FROM users;'
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.sql', delete=False) as temp_file:
+            temp_file.write(test_content)
+            temp_file_path = temp_file.name
+        
+        try:
+            # Set up processor with source file and output name
+            self.processor.set_source_file(temp_file_path)
+            self.processor.set_output_file_name('output_test.sql')
+            
+            # Simulate Case 2: Replace text field already contains "12345" 
+            # (from previous Generate Random String action that user didn't repeat)
+            existing_replace_text = "12345"
+            
+            # Process with the existing replace text value (simulating Case 2)
+            output_path = self.processor.process_db_password_file(
+                use_uppercase=True,
+                use_lowercase=True, 
+                use_numbers=True,
+                pre_generated_password=existing_replace_text  # This simulates reading from UI field
+            )
+            
+            # Read the output file to verify the existing replace text was used
+            with open(output_path, 'r', encoding='utf-8') as f:
+                output_content = f.read()
+            
+            # Verify that the existing replace text "12345" is in the output
+            self.assertIn("12345", output_content)
+            # Verify that the old password "newpass123" was replaced
+            self.assertNotIn("newpass123", output_content)
+            # Verify that the current password "oldpass456" was replaced with "newpass123"
+            self.assertNotIn("oldpass456", output_content)
+            
+            # Clean up output file
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+                
+        finally:
+            # Clean up temp file
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+
 
 if __name__ == '__main__':
     unittest.main()

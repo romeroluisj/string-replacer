@@ -230,7 +230,8 @@ class FileProcessor:
         self,
         use_uppercase: bool = True,
         use_lowercase: bool = True,
-        use_numbers: bool = True
+        use_numbers: bool = True,
+        pre_generated_password: str = None
     ) -> str:
         """Process file with database password replacement logic.
         
@@ -241,6 +242,8 @@ class FileProcessor:
             use_uppercase (bool): Include uppercase in generated password.
             use_lowercase (bool): Include lowercase in generated password.
             use_numbers (bool): Include numbers in generated password.
+            pre_generated_password (str): Optional pre-generated password to use.
+                                        If provided, this will be used instead of generating a new one.
             
         Returns:
             str: Path to the created output file.
@@ -270,12 +273,17 @@ class FileProcessor:
             raise ValueError("Could not find password patterns in first line. Expected 'BY \"password\"' and 'REPLACE \"password\"' patterns.")
         
         # Generate new passwords
-        str_updated_file_new_pw = self.generate_random_string(
-            length=self.config.max_random_length,
-            use_uppercase=use_uppercase,
-            use_lowercase=use_lowercase,
-            use_numbers=use_numbers
-        )
+        if pre_generated_password:
+            # Use the pre-generated password from UI
+            str_updated_file_new_pw = pre_generated_password
+        else:
+            # Generate a new random password
+            str_updated_file_new_pw = self.generate_random_string(
+                length=self.config.max_random_length,
+                use_uppercase=use_uppercase,
+                use_lowercase=use_lowercase,
+                use_numbers=use_numbers
+            )
         str_updated_file_cur_pw = str_sel_file_new_pw
         
         # Perform replacements

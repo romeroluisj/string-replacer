@@ -118,10 +118,14 @@ class MainController:
                     self.view.set_status("Error: No character types selected", "red")
                     return
                 
+                # Check if there's a pre-generated password in the replace text field
+                pre_generated_password = replace_text.strip() if replace_text.strip() else None
+                
                 output_path = self.model.process_db_password_file(
                     use_uppercase=use_uppercase,
                     use_lowercase=use_lowercase,
-                    use_numbers=use_numbers
+                    use_numbers=use_numbers,
+                    pre_generated_password=pre_generated_password
                 )
                 
                 # Show success message for database password processing
