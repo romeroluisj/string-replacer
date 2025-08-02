@@ -24,15 +24,15 @@ class StringReplacer:
         self.find_entry = ttk.Entry(self.main_frame)
         self.find_entry.grid(row=1, column=1, padx=5)
         
-        ttk.Label(self.main_frame, text="Replace with:").grid(row=2, column=0, sticky=tk.W)
+        ttk.Label(self.main_frame, text="Replace:").grid(row=2, column=0, sticky=tk.W)
         self.replace_entry = ttk.Entry(self.main_frame)
         self.replace_entry.grid(row=2, column=1, padx=5)
         
         # Random String Generation
-        ttk.Label(self.main_frame, text="Random String Length:").grid(row=3, column=0, sticky=tk.W)
+        ttk.Label(self.main_frame, text="Length:").grid(row=3, column=0, sticky=tk.W)
         self.max_chars = tk.StringVar(value="10")
         ttk.Entry(self.main_frame, textvariable=self.max_chars, width=5).grid(row=3, column=1, padx=5)
-        ttk.Button(self.main_frame, text="Generate Random String", command=self.generate_random_string).grid(row=3, column=2)
+        ttk.Button(self.main_frame, text="Random", command=self.generate_random_string).grid(row=3, column=2)
         
         # New File Name
         ttk.Label(self.main_frame, text="New File Name:").grid(row=4, column=0, sticky=tk.W)

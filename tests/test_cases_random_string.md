@@ -190,21 +190,21 @@ Just normal text content.
 
 ## User-Defined Cases (Case 1 & Case 2)
 
-### Case 1: Generate Random String → Process File
+### Case 1: Random → Process File
 - **Given**: 
   - Source file selected via Browse
   - Random string length selected
-  - Generate Random String button pushed → `sel_file_new_pw = "12345"`
+  - Random button pushed → `sel_file_new_pw = "12345"`
   - Any combination of UC/lc/number selected
   - File Type: DB pwd checkbox checked
 - **When**: Click Process file
 - **Then**: `sel_file_new_pw` ("12345") is written in contents of Output File
 
-### Case 2: Existing Replace Text → Process File
+### Case 2: Existing Replace → Process File
 - **Given**: 
-  - EXACTLY all conditions in Case 1, EXCEPT do NOT push "Generate Random String" button
+  - EXACTLY all conditions in Case 1, EXCEPT do NOT push "Random" button
   - Random string IS STILL THE SAME as Case 1 = `sel_file_new_pw = "12345"` 
-  - Value STILL APPEARS in "Replace With" box (hasn't been modified)
+  - Value STILL APPEARS in "Replace" box (hasn't been modified)
 - **When**: Click Process file
 - **Then**: The same `sel_file_new_pw` value ("12345") is written in contents of Output File
 

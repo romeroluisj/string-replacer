@@ -437,7 +437,7 @@ class TestDbPasswordController(unittest.TestCase):
             self.processor.set_output_file_name('output_test.sql')
             
             # Simulate Case 2: Replace text field already contains "12345" 
-            # (from previous Generate Random String action that user didn't repeat)
+            # (from previous Random action that user didn't repeat)
             existing_replace_text = "12345"
             
             # Process with the existing replace text value (simulating Case 2)

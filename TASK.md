@@ -76,14 +76,14 @@ Based on software engineering best practices, the following enhancements were im
 
 2. **Text Replacement Process**
    ```
-   User enters find text → User enters replace text OR generates random string →
+   User enters find → User enters replace text OR generates random string →
    User specifies output filename → User clicks "Process File" →
    New file created with replacements
    ```
 
 3. **Random String Generation**
    ```
-   User sets desired length → User clicks "Generate Random String" →
+   User sets desired length → User clicks "Random" →
    Random string appears in replace field → Ready for processing
    ```
 

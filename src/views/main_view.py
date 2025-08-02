@@ -18,7 +18,7 @@ class MainView:
         """
         self.root = root
         self.root.title("String Replacer - MVC Architecture")
-        self.root.geometry("600x300")
+        self.root.geometry("600x380")
         
         # Controller reference (will be set by controller)
         self.controller: Optional[Any] = None
@@ -51,8 +51,8 @@ class MainView:
         # Find/Replace section
         self._create_find_replace_section()
         
-        # Random string section
-        self._create_random_string_section()
+        # Replace Options section
+        self._create_replace_options_section()
         
         # File type section
         self._create_file_type_section()
@@ -79,32 +79,42 @@ class MainView:
         
     def _create_find_replace_section(self) -> None:
         """Create find/replace UI components."""
-        ttk.Label(self.main_frame, text="Find Text:").grid(row=1, column=0, sticky=tk.W, pady=2)
+        ttk.Label(self.main_frame, text="Find:").grid(row=1, column=0, sticky=tk.W, pady=2)
         self.find_entry = ttk.Entry(self.main_frame)
         self.find_entry.grid(row=1, column=1, padx=5, sticky=(tk.W, tk.E))
         
-        ttk.Label(self.main_frame, text="Replace With:").grid(row=2, column=0, sticky=tk.W, pady=2)
+        ttk.Label(self.main_frame, text="Replace:").grid(row=2, column=0, sticky=tk.W, pady=2)
         self.replace_entry = ttk.Entry(self.main_frame)
         self.replace_entry.grid(row=2, column=1, padx=5, sticky=(tk.W, tk.E))
         
-    def _create_random_string_section(self) -> None:
-        """Create random string generation UI components."""
-        ttk.Label(self.main_frame, text="Random String Length:").grid(row=3, column=0, sticky=tk.W, pady=2)
+    def _create_replace_options_section(self) -> None:
+        """Create Replace Options section with horizontal separators."""
+        # Create top horizontal separator
+        separator_top = ttk.Separator(self.main_frame, orient='horizontal')
+        separator_top.grid(row=3, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(10, 5))
+        
+        # Add section title
+        title_label = ttk.Label(self.main_frame, text="Replace Options", font=('TkDefaultFont', 9, 'bold'))
+        title_label.grid(row=4, column=0, sticky=tk.W, pady=2)
+        
+        # Random button (renamed from "Generate Random String")
+        self.generate_button = ttk.Button(self.main_frame, text="Random", 
+                                        command=self._on_generate_random)
+        self.generate_button.grid(row=5, column=0, sticky=tk.W, pady=2)
+        
+        # Length field (moved to right of Random button, renamed from "Random String Length")
+        ttk.Label(self.main_frame, text="Length:").grid(row=5, column=1, sticky=tk.W, padx=(10, 5), pady=2)
         
         self.random_length_var = tk.StringVar(value="10")
         self.random_length_entry = ttk.Entry(self.main_frame, textvariable=self.random_length_var, width=10)
-        self.random_length_entry.grid(row=3, column=1, padx=5, sticky=tk.W)
+        self.random_length_entry.grid(row=5, column=2, padx=5, sticky=tk.W, pady=2)
         
-        self.generate_button = ttk.Button(self.main_frame, text="Generate Random String", 
-                                        command=self._on_generate_random)
-        self.generate_button.grid(row=3, column=2, padx=5)
-        
-        # Character set selection checkboxes
-        ttk.Label(self.main_frame, text="Include Characters:").grid(row=4, column=0, sticky=tk.W, pady=2)
+        # Character set selection checkboxes (renamed from "Include Characters")
+        ttk.Label(self.main_frame, text="Char:").grid(row=6, column=0, sticky=tk.W, pady=2)
         
         # Create frame for checkboxes
         checkbox_frame = ttk.Frame(self.main_frame)
-        checkbox_frame.grid(row=4, column=1, columnspan=2, padx=5, sticky=tk.W)
+        checkbox_frame.grid(row=6, column=1, columnspan=2, padx=5, sticky=tk.W)
         
         # Checkbox variables (all checked by default)
         self.use_uppercase_var = tk.BooleanVar(value=True)
@@ -124,13 +134,17 @@ class MainView:
                                         variable=self.use_numbers_var)
         self.numbers_cb.pack(side=tk.LEFT, padx=5)
         
+        # Create bottom horizontal separator
+        separator_bottom = ttk.Separator(self.main_frame, orient='horizontal')
+        separator_bottom.grid(row=7, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(5, 10))
+        
     def _create_file_type_section(self) -> None:
         """Create file type selection UI components."""
-        ttk.Label(self.main_frame, text="File Type:").grid(row=5, column=0, sticky=tk.W, pady=2)
+        ttk.Label(self.main_frame, text="File Type:").grid(row=8, column=0, sticky=tk.W, pady=2)
         
         # Create frame for file type options
         filetype_frame = ttk.Frame(self.main_frame)
-        filetype_frame.grid(row=5, column=1, columnspan=2, padx=5, sticky=tk.W)
+        filetype_frame.grid(row=8, column=1, columnspan=2, padx=5, sticky=tk.W)
         
         # Database password checkbox (unchecked by default)
         self.db_pwd_var = tk.BooleanVar(value=False)
@@ -140,14 +154,14 @@ class MainView:
         
     def _create_output_file_section(self) -> None:
         """Create output file UI components."""
-        ttk.Label(self.main_frame, text="Output File Name:").grid(row=6, column=0, sticky=tk.W, pady=2)
+        ttk.Label(self.main_frame, text="Output File Name:").grid(row=9, column=0, sticky=tk.W, pady=2)
         self.output_file_entry = ttk.Entry(self.main_frame)
-        self.output_file_entry.grid(row=6, column=1, padx=5, sticky=(tk.W, tk.E))
+        self.output_file_entry.grid(row=9, column=1, padx=5, sticky=(tk.W, tk.E))
         
     def _create_action_buttons(self) -> None:
         """Create action buttons."""
         button_frame = ttk.Frame(self.main_frame)
-        button_frame.grid(row=7, column=0, columnspan=3, pady=20)
+        button_frame.grid(row=10, column=0, columnspan=3, pady=20)
         
         self.process_button = ttk.Button(button_frame, text="Process File", 
                                        command=self._on_process_file)
@@ -162,7 +176,7 @@ class MainView:
         self.status_var = tk.StringVar(value="Ready")
         self.status_label = ttk.Label(self.main_frame, textvariable=self.status_var, 
                                     foreground="blue")
-        self.status_label.grid(row=8, column=0, columnspan=3, pady=10)
+        self.status_label.grid(row=11, column=0, columnspan=3, pady=10)
         
     def _on_browse_file(self) -> None:
         """Handle browse file button click."""
