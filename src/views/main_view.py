@@ -106,8 +106,8 @@ class MainView:
         ttk.Label(self.main_frame, text="Length:").grid(row=5, column=1, sticky=tk.W, padx=(10, 5), pady=2)
         
         self.random_length_var = tk.StringVar(value="10")
-        self.random_length_entry = ttk.Entry(self.main_frame, textvariable=self.random_length_var, width=10)
-        self.random_length_entry.grid(row=5, column=2, padx=5, sticky=tk.W, pady=2)
+        self.random_length_entry = ttk.Entry(self.main_frame, textvariable=self.random_length_var, width=5)
+        self.random_length_entry.grid(row=5, column=1, padx=(60, 0), sticky=tk.W, pady=2)
         
         # Character set selection checkboxes (renamed from "Include Characters")
         ttk.Label(self.main_frame, text="Char:").grid(row=6, column=0, sticky=tk.W, pady=2)
