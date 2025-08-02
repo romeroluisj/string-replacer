@@ -143,6 +143,12 @@ class FileProcessor:
         base_name = os.path.basename(self.config.source_file_path)
         name, ext = os.path.splitext(base_name)
         
+        # Check if name ends with _yyyy_mm_dd suffix and remove it
+        import re
+        date_pattern = r'_\d{4}_\d{2}_\d{2}$'
+        if re.search(date_pattern, name):
+            name = re.sub(date_pattern, '', name)
+        
         # Get today's date in yyyy_mm_dd format
         today = datetime.now().strftime("%Y_%m_%d")
         
