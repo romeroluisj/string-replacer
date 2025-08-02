@@ -272,6 +272,10 @@ class FileProcessor:
         if not str_sel_file_new_pw or not str_sel_file_cur_pw:
             raise ValueError("Could not find password patterns in first line. Expected 'BY \"password\"' and 'REPLACE \"password\"' patterns.")
         
+        # Validate that the source file has different new and current passwords
+        if str_sel_file_new_pw == str_sel_file_cur_pw:
+            raise ValueError(f"Cannot create output file: the source file has the same password in both BY and REPLACE clauses ('{str_sel_file_cur_pw}'). The source file already has identical passwords, making replacement meaningless.")
+        
         # Generate new passwords
         if pre_generated_password:
             # Use the pre-generated password from UI
@@ -285,6 +289,10 @@ class FileProcessor:
                 use_numbers=use_numbers
             )
         str_updated_file_cur_pw = str_sel_file_new_pw
+        
+        # Validate that the output file won't have identical passwords
+        if str_updated_file_new_pw == str_updated_file_cur_pw:
+            raise ValueError(f"Cannot create output file: the new password ('{str_updated_file_new_pw}') is the same as the current password that will be used ('{str_updated_file_cur_pw}'). This would result in identical passwords in the output file. Please use a different password.")
         
         # Perform replacements
         # Reason: Replace all instances of old passwords with new ones

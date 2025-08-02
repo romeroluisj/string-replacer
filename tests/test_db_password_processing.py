@@ -469,5 +469,118 @@ class TestDbPasswordController(unittest.TestCase):
                 os.unlink(temp_file_path)
 
 
+    def test_process_db_password_file_source_has_identical_passwords(self) -> None:
+        """Test that processing fails when source file has identical passwords in BY and REPLACE clauses."""
+        # Create test file where BY password equals REPLACE password (like user's sample)
+        test_content = 'ALTER USER admin IDENTIFIED BY "password123" REPLACE "password123";\nSELECT * FROM users;'
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.sql', delete=False) as temp_file:
+            temp_file.write(test_content)
+            temp_file_path = temp_file.name
+        
+        try:
+            # Set up processor
+            self.processor.set_source_file(temp_file_path)
+            self.processor.set_output_file_name('output_test.sql')
+            self.processor.set_max_random_length(8)
+            
+            # Try to process - should fail because source file has identical passwords
+            with self.assertRaises(ValueError) as context:
+                self.processor.process_db_password_file(
+                    use_uppercase=True,
+                    use_lowercase=True,
+                    use_numbers=True
+                )
+            
+            # Verify the error message mentions the source file password conflict
+            error_message = str(context.exception)
+            self.assertIn("Cannot create output file", error_message)
+            self.assertIn("source file has the same password in both BY and REPLACE clauses", error_message)
+            self.assertIn("password123", error_message)
+            self.assertIn("making replacement meaningless", error_message)
+            
+        finally:
+            # Clean up temp file
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+    
+    def test_process_db_password_file_pre_generated_same_as_current(self) -> None:
+        """Test that processing fails when pre-generated password equals current password."""
+        # Create test file with different new and current passwords
+        test_content = 'ALTER USER admin IDENTIFIED BY "newpass123" REPLACE "currentpass456";\nSELECT * FROM users;'
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.sql', delete=False) as temp_file:
+            temp_file.write(test_content)
+            temp_file_path = temp_file.name
+        
+        try:
+            # Set up processor
+            self.processor.set_source_file(temp_file_path)
+            self.processor.set_output_file_name('output_test.sql')
+            
+            # Try to process with pre-generated password that matches current password
+            with self.assertRaises(ValueError) as context:
+                self.processor.process_db_password_file(
+                    use_uppercase=True,
+                    use_lowercase=True,
+                    use_numbers=True,
+                    pre_generated_password="currentpass456"  # Same as current password
+                )
+            
+            # Verify the error message mentions the password conflict
+            error_message = str(context.exception)
+            self.assertIn("Cannot create output file", error_message)
+            self.assertIn("same as the current password", error_message)
+            self.assertIn("currentpass456", error_message)
+            
+        finally:
+            # Clean up temp file
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+    
+    def test_process_db_password_file_different_passwords_success(self) -> None:
+        """Test that processing succeeds when new password is different from current password."""
+        # Create test file with different new and current passwords
+        test_content = 'ALTER USER admin IDENTIFIED BY "newpass123" REPLACE "currentpass456";\nSELECT * FROM users;'
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.sql', delete=False) as temp_file:
+            temp_file.write(test_content)
+            temp_file_path = temp_file.name
+        
+        try:
+            # Set up processor
+            self.processor.set_source_file(temp_file_path)
+            self.processor.set_output_file_name('output_test.sql')
+            
+            # Process with pre-generated password that's different from current password
+            output_path = self.processor.process_db_password_file(
+                use_uppercase=True,
+                use_lowercase=True,
+                use_numbers=True,
+                pre_generated_password="differentpass789"  # Different from current password
+            )
+            
+            # Verify output file was created successfully
+            self.assertTrue(os.path.exists(output_path))
+            
+            # Read and verify content
+            with open(output_path, 'r', encoding='utf-8') as f:
+                output_content = f.read()
+            
+            # Verify the different password was used
+            self.assertIn("differentpass789", output_content)
+            self.assertNotIn("currentpass456", output_content)
+            self.assertNotIn("newpass123", output_content)
+            
+            # Clean up output file
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+            
+        finally:
+            # Clean up temp file
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+
+
 if __name__ == '__main__':
     unittest.main()
