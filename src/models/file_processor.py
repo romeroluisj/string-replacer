@@ -143,11 +143,17 @@ class FileProcessor:
         base_name = os.path.basename(self.config.source_file_path)
         name, ext = os.path.splitext(base_name)
         
-        # Check if name ends with _yyyy_mm_dd suffix and remove it
-        import re
-        date_pattern = r'_\d{4}_\d{2}_\d{2}$'
-        if re.search(date_pattern, name):
-            name = re.sub(date_pattern, '', name)
+        # Check if name ends with date suffix and remove it
+        # Pattern matches YYYY_MM_DD at the end (regardless of separator before it)
+        date_pattern = r'[ _]\d{4}[ _]\d{2}[ _]\d{2}$'
+        match = re.search(date_pattern, name)
+        
+        if match:
+            # Remove the matched date pattern including its separator
+            name = name[:match.start()]
+        
+        # Remove any trailing spaces or underscores
+        name = name.rstrip(' _')
         
         # Get today's date in yyyy_mm_dd format
         today = datetime.now().strftime("%Y_%m_%d")
